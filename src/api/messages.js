@@ -12,6 +12,11 @@ export const messagesPOST = async (req, res) => {
         await mongoClient.connect()
         const db = mongoClient.db('batepapo_uol')
 
+        const participants = await db.collection('participants').findOne({ name: from })
+
+        if(participants === null) {
+            return res.status(422).send('Name not found in participants list')
+        }
 
         await messagesSchema.validateAsync(message)
         await db.collection('messages').insertOne(message)
