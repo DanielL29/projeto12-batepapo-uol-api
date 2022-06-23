@@ -22,7 +22,7 @@ export const participantsPOST = async (req, res) => {
             type: 'status',
             time: dayjs().format('HH:mm:ss')
         }
-        
+
         await participantSchema.validateAsync(participant)
         await db.collection('participants').insertOne(participant)
         await db.collection('messages').insertOne(statusMessage)
@@ -40,4 +40,20 @@ export const participantsGET = async (_, res) => {
     const participants = await db.collection('participants').find().toArray()
 
     res.send(participants)
+}
+
+export const participantStatusPOST = async (req, res) => {
+    const user = req.headers.user
+
+    await mongoClient.connect()
+    const db = mongoClient.db('batepapo_uol')
+
+    const participants = await db.collection('participants').find().toArray()
+    const hasParticipant = participants.some(participant => participant.name === user)
+
+    if (!hasParticipant) return res.sendStatus(404)
+
+    await db.collection('participants').updateOne({ name: user }, { $set: { lastStatus: Date.now() }})
+
+    res.sendStatus(200)
 }
