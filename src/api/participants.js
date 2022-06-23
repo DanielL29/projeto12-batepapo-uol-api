@@ -1,6 +1,6 @@
 import mongoClient from '../config/db.js'
-import { participantSchema } from '../validations/participants.js'
 import dayjs from 'dayjs'
+import { participantSchema } from '../validations/participants.js'
 
 export const participantsPOST = async (req, res) => {
     const { name } = req.body
@@ -10,7 +10,6 @@ export const participantsPOST = async (req, res) => {
 
     const participants = await db.collection('participants').find().toArray()
     const nameFounded = participants.some(participant => participant.name === name)
-    let validateParticipant;
 
     if (nameFounded) return res.sendStatus(409)
 
@@ -23,8 +22,8 @@ export const participantsPOST = async (req, res) => {
             type: 'status',
             time: dayjs().format('HH:mm:ss')
         }
-        validateParticipant = await participantSchema.validateAsync(participant)
-
+        
+        await participantSchema.validateAsync(participant)
         await db.collection('participants').insertOne(participant)
         await db.collection('messages').insertOne(statusMessage)
 
