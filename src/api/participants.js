@@ -1,9 +1,11 @@
 import mongoClient from '../config/db.js'
 import dayjs from 'dayjs'
+import { stripHtml } from 'string-strip-html'
 import { participantSchema } from '../validations/participants.js'
 
 export const participantsPOST = async (req, res) => {
-    const { name } = req.body
+    let { name } = req.body
+    name = stripHtml(name).result
 
     await mongoClient.connect()
     const db = mongoClient.db('batepapo_uol')

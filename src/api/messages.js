@@ -1,10 +1,16 @@
 import mongoClient from '../config/db.js'
 import dayjs from 'dayjs'
+import { stripHtml } from 'string-strip-html'
 import { messagesSchema } from '../validations/messages.js'
 
 export const messagesPOST = async (req, res) => {
-    const { to, text, type } = req.body
-    const from = req.headers.user
+    let { to, text, type } = req.body
+    let from = req.headers.user
+
+    to = stripHtml(to).result
+    text = stripHtml(text).result
+    type = stripHtml(type).result
+    from = stripHtml(from).result
 
     try {
         const message = { to, text, type, from, time: dayjs().format('HH:mm:ss') }
