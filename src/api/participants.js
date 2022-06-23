@@ -57,3 +57,28 @@ export const participantStatusPOST = async (req, res) => {
 
     res.sendStatus(200)
 }
+
+const removingInativeUsers = async () => {
+    let amountDeletedMessages = []
+
+    await mongoClient.connect()
+    const db = mongoClient.db('batepapo_uol')
+    const statusMessage = {
+        from: 'xxx',
+        to: 'Todos',
+        text: 'sai da sala...',
+        time: dayjs().format('HH:mm:ss')
+    }
+
+    const deletedCount = await (await db.collection('participants').deleteMany({ lastStatus: { $lt: Date.now() - 10000 } })).deletedCount
+
+    for(let i = 0; i < deletedCount; i++) {
+        amountDeletedMessages.push(statusMessage)
+    }
+    
+    if(amountDeletedMessages.length > 0) {
+        await db.collection('messages').insertMany(amountDeletedMessages)
+    }
+}
+
+setInterval(removingInativeUsers, 15000)
