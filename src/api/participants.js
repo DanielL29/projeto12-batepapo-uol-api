@@ -25,7 +25,7 @@ export const participantsPOST = async (req, res) => {
             time: dayjs().format('HH:mm:ss')
         }
 
-        await participantSchema.validateAsync(participant)
+        await participantSchema.validateAsync(participant, { abortEarly: false })
         await db.collection('participants').insertOne(participant)
         await db.collection('messages').insertOne(statusMessage)
 
@@ -65,17 +65,17 @@ const removingInativeUsers = async () => {
 
     await mongoClient.connect()
     const db = mongoClient.db('batepapo_uol')
-    const statusMessage = {
-        from: 'xxx',
-        to: 'Todos',
-        text: 'sai da sala...',
-        time: dayjs().format('HH:mm:ss')
-    }
 
+    const inativeUsers = await db.collection('participants').find({ lastStatus: { $lt: Date.now() - 10000 } }).toArray()
     const deletedCount = await (await db.collection('participants').deleteMany({ lastStatus: { $lt: Date.now() - 10000 } })).deletedCount
 
     for(let i = 0; i < deletedCount; i++) {
-        amountDeletedMessages.push(statusMessage)
+        amountDeletedMessages.push({
+            from: inativeUsers[i].name,
+            to: 'Todos',
+            text: 'sai da sala...',
+            time: dayjs().format('HH:mm:ss')
+        })
     }
     
     if(amountDeletedMessages.length > 0) {

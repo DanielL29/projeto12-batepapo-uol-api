@@ -19,5 +19,6 @@ export const messagesSchema = Joi.object({
         .required(),
     time: Joi.string()
         .min(1)
+        .trim()
         .required()
 })
