@@ -6,12 +6,11 @@ import { ObjectId } from 'mongodb'
 
 export const messagesPOST = async (req, res) => {
     let { to, text, type } = req.body
-    let from = req.headers.user
+    const from = req.headers.user
 
     to = stripHtml(to).result
     text = stripHtml(text).result
     type = stripHtml(type).result
-    from = stripHtml(from).result
 
     try {
         const message = { to, text, type, from, time: dayjs().format('HH:mm:ss') }
@@ -40,8 +39,12 @@ export const messagesGET = async (req, res) => {
     await mongoClient.connect()
     const db = mongoClient.db('batepapo_uol')
 
-    const messages = await db.collection('messages').find().sort({ _id: -1 }).limit(limit).toArray()
-    const userMessages = messages.filter(messages => messages.to === 'Todos' || messages.to === user || messages.from === user)
+    const messages = await db.collection('messages').find().sort({ _id: -1 }).limit(limit === null ? 0 : limit).toArray()
+    const userMessages = messages.filter(messages => 
+        messages.type === 'message' || 
+        messages.type === 'status' || 
+        messages.type === 'private_message' && messages.to === user || 
+        messages.type === 'private_message' && messages.from === user)
 
     res.send(userMessages.reverse())
 }

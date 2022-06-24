@@ -5,17 +5,17 @@ import { participantSchema } from '../validations/participants.js'
 
 export const participantsPOST = async (req, res) => {
     let { name } = req.body
-    name = stripHtml(name).result
-
+    
     await mongoClient.connect()
     const db = mongoClient.db('batepapo_uol')
-
+    
     const participants = await db.collection('participants').find().toArray()
     const nameFounded = participants.some(participant => participant.name === name)
-
+    
     if (nameFounded) return res.sendStatus(409)
-
+    
     try {
+        name = stripHtml(name).result
         const participant = { name, lastStatus: Date.now() }
         const statusMessage = {
             from: name,
@@ -74,6 +74,7 @@ const removingInativeUsers = async () => {
             from: inativeUsers[i].name,
             to: 'Todos',
             text: 'sai da sala...',
+            type: 'status',
             time: dayjs().format('HH:mm:ss')
         })
     }
